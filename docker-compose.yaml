@@ -1,0 +1,32 @@
+version: "3.6"
+
+services:
+  mysql:
+    container_name: sword_mysql
+    image: mysql:8
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: sword
+      MYSQL_PASSWORD: sword
+      MYSQL_DATABASE: sword
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - sword_mysql_volume:/var/lib/mysql
+
+  rabbitmq:
+    container_name: sword_rabbitmq
+    image: 'rabbitmq:3-management'
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_PASS: 'sword'
+      RABBITMQ_DEFAULT_USER: 'sword'
+      RABBITMQ_DEFAULT_VHOST: 'dev'
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+volumes:
+  sword_mysql_volume:
