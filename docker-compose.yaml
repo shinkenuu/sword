@@ -1,6 +1,45 @@
 version: "3.6"
 
 services:
+  rest:
+    container_name: sword_rest
+    build: .
+    restart: unless-stopped
+    depends_on:
+      - rabbitmq
+      - mysql
+    ports:
+      - "8000:8000"
+    environment:
+      RABBITMQ_URL: amqp://sword:sword@rabbitmq:5672/dev
+      RABBITMQ_EXCHANGE: sword
+      RABBITMQ_ROUTING_KEY: tasks
+      RABBITMQ_QUEUE: tasks
+      DB_NAME: sword
+      DB_USER: sword
+      DB_PASSWORD: sword
+      DB_HOST: mysql
+      DB_PORT: 3306
+
+  consumer:
+    container_name: sword_consumer
+    build: .
+    restart: unless-stopped
+    depends_on:
+      - rabbitmq
+    environment:
+      RABBITMQ_URL: amqp://sword:sword@rabbitmq:5672/dev
+      RABBITMQ_EXCHANGE: sword
+      RABBITMQ_ROUTING_KEY: tasks
+      RABBITMQ_QUEUE: tasks
+      DB_NAME: sword
+      DB_USER: sword
+      DB_PASSWORD: sword
+      DB_HOST: mysql
+      DB_PORT: 3306
+      PYTHONUNBUFFERED: 0
+    command: [ "python", "-u", "consume.py" ]
+
   mysql:
     container_name: sword_mysql
     image: mysql:8
@@ -8,7 +47,7 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: sword
       MYSQL_USER: sword
       MYSQL_PASSWORD: sword
       MYSQL_DATABASE: sword
